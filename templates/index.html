@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ATS Resume Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 20px;
+        }
+
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .result-box {
+            background-color: white;
+            padding: 20px;
+            border-left: 6px solid #007bff;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        ul {
+            list-style-type: square;
+            padding-left: 20px;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .message {
+            background: #e6f2ff;
+            padding: 15px;
+            border-left: 6px solid #007bff;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .circular-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .circular-chart {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: #eee;
+            stroke-width: 10;
+        }
+
+        .circle {
+            fill: none;
+            stroke: #28a745;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 1s ease-out;
+        }
+
+        .percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <h1>ATS Resume Analyzer</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label for="resume">Upload Resume (PDF or DOCX):</label>
+        <input type="file" id="resume" name="resume" required>
+
+        <label for="jobdesc">Paste Job Description:</label>
+        <textarea id="jobdesc" name="jobdesc" rows="10" placeholder="Paste the job description here..." required></textarea>
+
+        <input type="submit" value="Analyze Resume">
+    </form>
+
+    {% if show_prediction %}
+    <div class="message">
+        💡 <strong>Predicted Role Based on Job Description:</strong> {{ predicted_role }}
+    </div>
+    {% endif %}
+
+    {% if score is not none %}
+    <div class="result-box">
+        <div class="circular-chart-container">
+            <div class="circular-chart">
+                <svg viewBox="0 0 120 120">
+                    <circle class="circle-bg" cx="60" cy="60" r="50"/>
+                    <circle class="circle" cx="60" cy="60" r="50"/>
+                </svg>
+                <div class="percentage" id="percentage-text">{{ score }}%</div>
+            </div>
+        </div>
+
+        <p><span class="highlight">Your Current Skills (from Resume):</span></p>
+        <ul>
+            {% for skill in current_skills %}
+                <li>{{ skill }}</li>
+            {% endfor %}
+        </ul>
+
+        <p><span class="highlight">Matched Skills:</span></p>
+        <ul>
+            {% for skill in current_skills if skill in recommended_skills %}
+                <li>{{ skill }}</li>
+            {% endfor %}
+        </ul>
+
+        <p><span class="highlight">Recommended Skills (Missing):</span></p>
+        <ul>
+            {% for skill in recommended_skills %}
+                <li>{{ skill }}</li>
+            {% endfor %}
+        </ul>
+
+        {% if course_links %}
+        <hr>
+        <h3 style="color: green;">Adding these skills to your resume will boost 🚀 your chances of getting a job 💼</h3>
+        <h3>🎓 Courses & Certificates Recommendations</h3>
+        <ul>
+            {% for skill, link in course_links %}
+                <li>📘 <a href="{{ link }}" target="_blank">{{ skill }} Course</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+
+    <script>
+        const score = {{ score }};
+        const circle = document.querySelector('.circle');
+        const offset = 314 - (314 * score) / 100;
+        circle.style.strokeDashoffset = offset;
+    </script>
+    {% endif %}
+</body>
+</html>

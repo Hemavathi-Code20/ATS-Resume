@@ -1,0 +1,6 @@
+Flask
+python-docx
+PyPDF2
+spacy
+fuzzywuzzy
+python-Levenshtein
